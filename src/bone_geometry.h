@@ -20,6 +20,30 @@ struct BoundingBox {
     glm::vec3 max;
 };
 
+struct Joint {
+    Joint()
+        : joint_index(-1),
+          parent_index(-1),
+          position(glm::vec3(0.0f)),
+          init_position(glm::vec3(0.0f)) {}
+    Joint(int id, glm::vec3 wcoord, int parent)
+        : joint_index(id),
+          parent_index(parent),
+          position(wcoord),
+          init_position(wcoord),
+          init_rel_position(init_position) {}
+
+    int joint_index;
+    int parent_index;
+    glm::vec3 position;      // position of the joint
+    glm::fquat orientation;  // rotation w.r.t. initial configuration
+    glm::fquat
+        rel_orientation;  // rotation w.r.t. it's parent. Used for animation.
+    glm::vec3 init_position;      // initial position of this joint
+    glm::vec3 init_rel_position;  // initial relative position to its parent
+    std::vector<int> children;
+};
+
 struct Bone {
     Bone(Joint start, Joint end) {
         this->start = &start;
@@ -43,30 +67,6 @@ struct Bone {
 
     Bone* parent;
     std::vector<Bone*> nodes;
-};
-
-struct Joint {
-    Joint()
-        : joint_index(-1),
-          parent_index(-1),
-          position(glm::vec3(0.0f)),
-          init_position(glm::vec3(0.0f)) {}
-    Joint(int id, glm::vec3 wcoord, int parent)
-        : joint_index(id),
-          parent_index(parent),
-          position(wcoord),
-          init_position(wcoord),
-          init_rel_position(init_position) {}
-
-    int joint_index;
-    int parent_index;
-    glm::vec3 position;      // position of the joint
-    glm::fquat orientation;  // rotation w.r.t. initial configuration
-    glm::fquat
-        rel_orientation;  // rotation w.r.t. it's parent. Used for animation.
-    glm::vec3 init_position;      // initial position of this joint
-    glm::vec3 init_rel_position;  // initial relative position to its parent
-    std::vector<int> children;
 };
 
 struct Configuration {
@@ -100,8 +100,7 @@ struct Skeleton {
     void constructBone(int joint);
 
     // FIXME: create skeleton and bone data structures
-    std::vector<Bone*> bones;
-    std::vector<Joint*> joints;
+    std::vector<Bone> bones;
 };
 
 struct Mesh {
