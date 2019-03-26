@@ -62,7 +62,7 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 		int screen_info[4];
 
 		// get the width/height of the window
-        glGetIntegerv(GL_VIEWPORT, screen_info);
+		glGetIntegerv(GL_VIEWPORT, screen_info);
 		pixels = new unsigned char[screen_info[2] * screen_info[3] * 3];
 		
 		// Read in pixel data
