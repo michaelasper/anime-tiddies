@@ -58,7 +58,19 @@ void GUI::keyCallback(int key, int scancode, int action, int mods)
 		return ;
 	}
 	if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
-		//FIXME save out a screenshot using SaveJPEG
+		unsigned char* pixels;
+		int screen_info[4];
+
+		// get the width/height of the window
+        glGetIntegerv(GL_VIEWPORT, screen_info);
+		pixels = new unsigned char[screen_info[2] * screen_info[3] * 3];
+		
+		// Read in pixel data
+		glReadPixels(0, 0, screen_info[2], screen_info[3], GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+		SaveJPEG("out.jpg", screen_info[2], screen_info[3], pixels);
+
+		std::cout << "Saved to out.jpg!" << std::endl;		
 	}
 	if (key == GLFW_KEY_S && (mods & GLFW_MOD_CONTROL)) {
 		if (action == GLFW_RELEASE)
