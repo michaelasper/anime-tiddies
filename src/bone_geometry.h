@@ -54,6 +54,7 @@ struct Bone {
         this->direction = glm::normalize(end.position - start.position);
         this->parent = nullptr;
         this->parent_orientation_relative = glm::fquat(1.0, 0.0, 0.0, 0.0);
+        this->root = start.joint_index;
     };
 
     // properities

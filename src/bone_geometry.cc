@@ -60,7 +60,7 @@ void Skeleton::constructBone(int joint) {
     bones[joint] = bone;
 
     auto trans = start.position;
-    if (start.parent_index >= 0) {
+    if (start.parent_index > -1) {
         bone->parent = bones[end.parent_index];
         trans = start.position - joints[start.parent_index].position;
     }
@@ -70,13 +70,12 @@ void Skeleton::constructBone(int joint) {
     bone->translation[3][1] = trans.y;
     bone->translation[3][2] = trans.z;
     bone->start_translation = bone->translation;
+    bone->undeformed_transform = bone->translation;
 
     if (start.parent_index == -1) {
-        bone->undeformed_transform = bone->translation;
         bone->deformed_transform =
             bone->translation *
             glm::toMat4(glm::normalize(bone->parent_orientation_relative));
-        bone->root = start.joint_index;
     } else {
         bone->undeformed_transform =
             (bone->parent)->undeformed_transform * bone->translation;
