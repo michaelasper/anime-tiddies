@@ -22,18 +22,6 @@ namespace Cylinder
         return p + t * d;
     }
 
-    bool Cylinder::intersectLocal(glm::dvec3 p, glm::dvec3 d) {
-        // FIXME: check these suspicious initialization.
-        //i.setObject(this);
-        //i.setMaterial(this->getMaterial());
-
-        if (intersectCaps(p, d)) {
-            return true;
-        } else {
-            return intersectBody(p, d);
-        }
-    }
-
     bool intersectBody(glm::dvec3 p, glm::dvec3 d) {
         double x0 = p.x;
         double y0 = p.y;
@@ -97,7 +85,7 @@ namespace Cylinder
         return false;
     }
 
-    bool Cylinder::intersectCaps(glm::dvec3 p, glm::dvec3 d) {
+    bool intersectCaps(glm::dvec3 p, glm::dvec3 d) {
 
         double pz = p.z;
         double dz = d.z;
@@ -122,8 +110,8 @@ namespace Cylinder
         }
 
         if (t1 >= RAY_EPSILON) {
-            glm::dvec3 p(at(p, d, t1));
-            if ((p[0] * p[0] + p[1] * p[1]) <= 1.0) {
+            glm::dvec3 P(at(p, d, t1));
+            if ((P[0] * P[0] + P[1] * P[1]) <= 1.0) {
                 //i.setT(t1);
                 if (dz > 0.0) {
                     // Intersection with cap at z = 0.
@@ -135,8 +123,8 @@ namespace Cylinder
             }
         }
 
-        glm::dvec3 p(at(p, d, t2));
-        if ((p[0] * p[0] + p[1] * p[1]) <= 1.0) {
+        glm::dvec3 P(at(p, d, t2));
+        if ((P[0] * P[0] + P[1] * P[1]) <= 1.0) {
             //i.setT(t2);
             if (dz > 0.0) {
                 // Intersection with interior of cap at z = 1.
@@ -149,6 +137,19 @@ namespace Cylinder
 
         return false;
     }
+
+    bool intersectLocal(glm::dvec3 p, glm::dvec3 d) {
+        // FIXME: check these suspicious initialization.
+        //i.setObject(this);
+        //i.setMaterial(this->getMaterial());
+
+        if (intersectCaps(p, d)) {
+            return true;
+        } else {
+            return intersectBody(p, d);
+        }
+    }
+	
 
 } // namespace Cylinder
 
@@ -314,6 +315,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y)
 	r_world = glm::normalize(r_world);
 
 	std::cout << r_world[0] << " " << r_world[1] << " " << r_world[2] << std::endl;
+
+    
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)
