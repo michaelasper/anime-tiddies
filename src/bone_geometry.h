@@ -52,12 +52,15 @@ struct Bone {
         this->parent_index = start.joint_index;
         this->length = glm::length(end.position - start.position);
         this->direction = glm::normalize(end.position - start.position);
+        this->parent = nullptr;
+        this->parent_orientation_relative = glm::fquat(1.0, 0.0, 0.0, 0.0);
     };
 
     // properities
 
     int index;
     int parent_index;
+    int root;
     double length;
 
     glm::vec3 direction;
@@ -67,6 +70,14 @@ struct Bone {
 
     Bone* parent;
     std::vector<Bone*> nodes;
+
+    // matrices
+    glm::mat4 start_translation;
+    glm::mat4 undeformed_transform;
+    glm::mat4 deformed_transform;
+    glm::mat4 translation;
+
+    glm::fquat parent_orientation_relative;
 };
 
 struct Configuration {
@@ -100,7 +111,7 @@ struct Skeleton {
     void constructBone(int joint);
 
     // FIXME: create skeleton and bone data structures
-    std::vector<Bone> bones;
+    std::vector<Bone*> bones;
 };
 
 struct Mesh {
