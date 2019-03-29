@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.toml": "toml",
+        "__locale": "cpp",
+        "locale": "cpp",
+        "thread": "cpp"
+    }
+}

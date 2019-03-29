@@ -81,6 +81,13 @@ struct Bone {
 
     glm::fquat parent_orientation_relative;
     glm::fquat orientation;
+
+    void translate(glm::vec3 translation);
+    void translateParent();
+
+    void rotate(glm::fquat rotate_);
+    void rotate_(glm::fquat rotate_);
+    void rotateParent();
 };
 
 struct Configuration {
@@ -112,6 +119,7 @@ struct Skeleton {
     const glm::vec3* collectJointTrans() const;
     const glm::fquat* collectJointRot() const;
     void constructBone(int joint);
+    void translate(glm::vec3 translation, int root);
 
     // FIXME: create skeleton and bone data structures
     std::vector<Bone*> bones;

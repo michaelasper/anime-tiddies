@@ -43,6 +43,74 @@ void Skeleton::refreshCache(Configuration* target) {
     }
 }
 
+void Skeleton::translate(glm::vec3 translation, int root) {
+    Joint joint = joints[root];
+    for (int id : joint.children) {
+        bones[id]->translate(translation);
+    }
+}
+
+void Bone::translate(glm::vec3 translation) {
+    this->translation[3][0] += 10.0f * translation.x;
+    this->translation[3][1] += 10.0f * translation.y;
+    this->translation[3][2] += 10.0f * translation.z;
+    this->deformed_transform =
+        this->translation *
+        glm::toMat4(glm::normalize(this->parent_orientation_relative));
+
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes[i]->translateParent();
+    }
+}
+
+void Bone::translateParent() {
+    this->deformed_transform =
+        this->parent->deformed_transform * this->translation *
+        glm::toMat4(glm::normalize(this->parent_orientation_relative));
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes[i]->translateParent();
+    }
+}
+
+void Bone::rotate(glm::fquat rotate_) {
+    if (parent != nullptr)
+        for (int i = 0; i < parent->nodes.size(); i++)
+            parent->nodes[i]->rotate_(rotate_);
+    else
+        this->rotate_(rotate_);
+}
+
+void Bone::rotate_(glm::fquat rotate_) {
+    glm::mat4 pre_parent = glm::toMat4(this->parent_orientation_relative);
+    glm::mat4 pre_orientation = glm::toMat4(this->orientation);
+
+    glm::mat4 update_parent = glm::toMat4(rotate_) * pre_parent;
+    glm::mat4 update_orientation = glm::toMat4(rotate_) * pre_orientation;
+
+    this->parent_orientation_relative =
+        glm::normalize(glm::toQuat(update_parent));
+    this->orientation = glm::normalize(glm::toQuat(update_orientation));
+
+    this->deformed_transform *= glm::inverse(pre_parent) * update_parent;
+
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes[i]->rotateParent();
+    }
+}
+
+void Bone::rotateParent() {
+    this->deformed_transform = this->parent->deformed_transform * translation *
+                               glm::toMat4(this->parent_orientation_relative);
+    glm::mat4 update_orientation =
+        glm::toMat4(this->parent->orientation) *
+        glm::toMat4(this->parent_orientation_relative);
+    this->orientation = glm::normalize(glm::toQuat(update_orientation));
+
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes[i]->rotateParent();
+    }
+}
+
 void Skeleton::constructBone(int joint) {
     if (bones[joint] != nullptr) return;
 
