@@ -46,6 +46,8 @@ public:
 	bool isPlaying() const { return play_; }
 	float getCurrentPlayTime() const;
 
+	glm::mat4 bone_transform();
+
 private:
 	GLFWwindow* window_;
 	Mesh* mesh_;

@@ -49,6 +49,14 @@ const char* bone_fragment_shader =
 #include "shaders/bone.frag"
 ;
 
+const char* cylinder_vertex_shader = 
+#include "shaders/cylinder.vert"
+;
+
+const char* cylinder_fragment_shader = 
+#include "shaders/cylinder.frag"
+;
+
 // FIXME: Add more shaders here.
 
 void ErrorCallback(int error, const char* description) {
@@ -152,8 +160,10 @@ int main(int argc, char* argv[])
 	std::function<glm::mat4()> identity_mat = [](){ return glm::mat4(1.0f); };
 	std::function<glm::vec3()> cam_data = [&gui](){ return gui.getCamera(); };
 	std::function<glm::vec4()> lp_data = [&light_position]() { return light_position; };
+	std::function<glm::mat4()> bone_data = [&gui]() { return gui.bone_transform(); };
 
 	auto std_model = std::make_shared<ShaderUniform<const glm::mat4*>>("model", model_data);
+	auto bone_transform = make_uniform("bone_transform", bone_data);
 	auto floor_model = make_uniform("model", identity_mat);
 	auto std_view = make_uniform("view", view_data);
 	auto std_camera = make_uniform("camera_position", cam_data);
@@ -241,6 +251,15 @@ int main(int argc, char* argv[])
 			{ "fragment_color" }
 			);
 
+	RenderDataInput cylinder_pass_input;
+	cylinder_pass_input.assign(0, "vertex_position", cylinder_mesh.vertices.data(), cylinder_mesh.vertices.size(), 4, GL_FLOAT);
+	cylinder_pass_input.assignIndex(cylinder_mesh.indices.data(), cylinder_mesh.indices.size(), 2);
+	RenderPass cylinder_pass(-1, cylinder_pass_input,
+		{ cylinder_vertex_shader, nullptr, cylinder_fragment_shader},
+		{ std_model, std_view, std_proj, bone_transform },
+		{ "fragment_color" }
+		);
+
 	// FIXME: Create the RenderPass objects for bones here.
 	//        Otherwise do whatever you like.
 
@@ -292,6 +311,13 @@ int main(int argc, char* argv[])
 			                              GL_UNSIGNED_INT, 0));
 		}
 		draw_cylinder = (current_bone != -1 && gui.isTransparent());
+
+		if(draw_cylinder) {
+			cylinder_pass.setup();
+			CHECK_GL_ERROR(glDrawElements(GL_LINES,
+			                              cylinder_mesh.indices.size() * 2,
+			                              GL_UNSIGNED_INT, 0));
+		}
 
 		// Then draw floor.
 		if (draw_floor) {
