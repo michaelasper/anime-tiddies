@@ -412,7 +412,7 @@ glm::mat4 GUI::bone_transform() {
         return glm::mat4(1.0f);
     }
     Bone* bone = mesh_->skeleton.bones[index];
-    return bone->deformed_transform;
+    return bone->deformed_transform * glm::scale(glm::vec3(1, bone->length, 1));
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods)
