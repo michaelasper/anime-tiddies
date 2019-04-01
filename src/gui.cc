@@ -327,21 +327,25 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
 
     for (auto bone : bones) {
         if (bone != nullptr) {
-            // glm::mat4 ori = glm::mat4_cast(bone->orientation);
-            glm::mat4 ori = bone->deformed_transform;
+            glm::mat4 ori = bone_transform_index(bone->index);
             glm::vec3 p = eye_;
             glm::vec3 d = r_world;
             glm::mat4 scale = glm::mat4(bone->length);
-
+            /*
             p = glm::vec3(glm::inverse(bone->deformed_transform) *
                           glm::vec4(p, 1));
             d = glm::vec3(glm::inverse(bone->deformed_transform) *
+                          glm::vec4(d, 0));
+            */
+
+            p = glm::vec3(glm::inverse(ori) *
+                          glm::vec4(p, 1));
+            d = glm::vec3(glm::inverse(ori) *
                           glm::vec4(d, 0));
 
             bool val = Cylinder::intersectLocal(p, d, T);
 
             if (val) {
-                // current_bone_ = bone->index;
                 if (T >= 0 && T < prev) {
                     current_bone_ = bone->index;
                     prev = T;
@@ -383,7 +387,40 @@ glm::mat4 GUI::bone_transform() {
     alignment[2][2] = z[2];
 
     return bone->deformed_transform * alignment *
-           glm::scale(glm::vec3(1, bone->length, 1));
+           glm::scale(glm::vec3(bone->length, 1, 1));
+}
+
+glm::mat4 GUI::bone_transform_index(int index) {
+    if (index == 0) {
+        return glm::mat4(1.0f);
+    }
+    Bone *bone = mesh_->skeleton.bones[index];
+
+    auto alignment = glm::mat4(1.0);
+    alignment[0][0] = bone->direction[0];
+    alignment[0][1] = bone->direction[1];
+    alignment[0][2] = bone->direction[2];
+
+    glm::vec3 y;
+    if (bone->direction.x != 0) {
+        y = glm::normalize(
+            glm::cross(bone->direction, glm::vec3(0.0, 1.0, 0.0)));
+    } else {
+        y = glm::normalize(
+            glm::cross(bone->direction, glm::vec3(1.0, 0.0, 0.0)));
+    }
+
+    auto z = glm::normalize(glm::cross(bone->direction, y));
+
+    alignment[1][0] = y[0];
+    alignment[1][1] = y[1];
+    alignment[1][2] = y[2];
+    alignment[2][0] = z[0];
+    alignment[2][1] = z[1];
+    alignment[2][2] = z[2];
+
+    return bone->deformed_transform * alignment *
+           glm::scale(glm::vec3(bone->length, 1, 1));
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods) {

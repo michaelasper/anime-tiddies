@@ -51,6 +51,7 @@ class GUI {
     float getCurrentPlayTime() const;
 
     glm::mat4 bone_transform();
+	glm::mat4 bone_transform_index(int index);
 
    private:
     GLFWwindow* window_;
