@@ -10,9 +10,9 @@ in vec4 vertex_position;
 // Note: you need call sin/cos to transform the input mesh to a cylinder
 void main() {
     vec4 wrapped = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	wrapped.x = cos(2 * kPi * vertex_position.x) * 0.25;
+	wrapped.y = cos(2 * kPi * vertex_position.x) * 0.25;
 	wrapped.z = sin(2 * kPi * vertex_position.x) * 0.25;
-	wrapped.y = vertex_position.y;
+	wrapped.x = vertex_position.y;
 
     //gl_Position = projection * view * model * wrapped;
     gl_Position = projection * view * model * bone_transform * wrapped;

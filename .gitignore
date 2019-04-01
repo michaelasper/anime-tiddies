@@ -122,4 +122,6 @@ Temporary Items
 # Ignore all local history of files
 .history
 
+skinning
+
 # End of https://www.gitignore.io/api/git,c++,macos,linux,cmake,visualstudiocode

@@ -35,9 +35,32 @@ const glm::fquat* Skeleton::collectJointRot() const { return cache.rot.data(); }
 
 void Skeleton::refreshCache(Configuration* target) {
     if (target == nullptr) target = &cache;
+
     target->rot.resize(joints.size());
     target->trans.resize(joints.size());
-    for (size_t i = 0; i < joints.size(); i++) {
+
+    for (int i = 0; i < bones.size(); i++) {
+        if (bones[i] != nullptr) {
+            joints[bones[i]->parent_index].orientation = bones[i]->orientation;
+            joints[bones[i]->parent_index].rel_orientation =
+                bones[i]->parent_orientation_relative;
+        }
+    }
+
+    for (int i = 0; i < joints.size(); i++) {
+        if (joints[i].parent_index != -1) {
+            joints[i].position =
+                glm::vec3(bones[i]->deformed_transform *
+                          glm::inverse(bones[i]->undeformed_transform) *
+                          glm::vec4(joints[i].init_position, 1.0));
+        } else {
+            int root = joints[i].children[0];
+            joints[i].position = glm::vec3(bones[root]->translation[3][0],
+                                           bones[root]->translation[3][1],
+                                           bones[root]->translation[3][2]);
+        }
+    }
+    for (int i = 0; i < joints.size(); i++) {
         target->rot[i] = joints[i].orientation;
         target->trans[i] = joints[i].position;
     }
