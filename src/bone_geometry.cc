@@ -215,6 +215,22 @@ void Mesh::loadPmd(const std::string& fn) {
     for (uint i = 1; i < skeleton.joints.size(); i++) {
         skeleton.constructBone(i);
     }
+
+    std::vector<SparseTuple> weights;
+    mr.getJointWeights(weights);
+
+    for (SparseTuple& sparse_tuple : weights) {
+        int v_id = sparse_tuple.vid;
+        joint0.emplace_back(sparse_tuple.jid0);
+        joint1.emplace_back(sparse_tuple.jid1);
+        weight_for_joint0.emplace_back(sparse_tuple.weight0);
+        vector_from_joint0.emplace_back(
+            glm::vec3(vertices[v_id]) -
+            skeleton.joints[sparse_tuple.jid0].position);
+        vector_from_joint1.emplace_back(
+            glm::vec3(vertices[v_id]) -
+            skeleton.joints[sparse_tuple.jid1].position);
+    }
 }
 
 int Mesh::getNumberOfBones() const { return skeleton.joints.size(); }

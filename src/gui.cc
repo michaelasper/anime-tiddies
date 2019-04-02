@@ -144,6 +144,12 @@ bool intersectLocal(glm::dvec3 p, glm::dvec3 d, int &T) {
     // i.setMaterial(this->getMaterial());
 
     if (intersectCaps(p, d, T)) {
+        int tt;
+        if (intersectBody(p, d, tt)) {
+            if (tt < (T)) {
+                T = tt;
+            }
+        }
         return true;
     } else {
         return intersectBody(p, d, T);
@@ -219,6 +225,16 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
         else
             roll_speed = roll_speed_;
         // FIXME: actually roll the bone here
+
+        if (current_bone_ == -1) {
+            return;
+        }
+
+        Bone *bone = mesh_->skeleton.bones[current_bone_];
+        glm::fquat rotate_ =
+            glm::toQuat(glm::rotate(roll_speed, bone->direction));
+        bone->rotate(rotate_);
+        mesh_->updateAnimation();
     } else if (key == GLFW_KEY_C && action != GLFW_RELEASE) {
         fps_mode_ = !fps_mode_;
     } else if (key == GLFW_KEY_LEFT_BRACKET && action == GLFW_RELEASE) {
@@ -338,10 +354,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
                           glm::vec4(d, 0));
             */
 
-            p = glm::vec3(glm::inverse(ori) *
-                          glm::vec4(p, 1));
-            d = glm::vec3(glm::inverse(ori) *
-                          glm::vec4(d, 0));
+            p = glm::vec3(glm::inverse(ori) * glm::vec4(p, 1));
+            d = glm::vec3(glm::inverse(ori) * glm::vec4(d, 0));
 
             bool val = Cylinder::intersectLocal(p, d, T);
 
