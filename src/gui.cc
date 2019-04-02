@@ -408,7 +408,7 @@ glm::mat4 GUI::bone_transform_index(int index) {
     alignment[2][2] = z[2];
 
     return bone->deformed_transform * alignment *
-           glm::scale(glm::vec3(bone->length, 1, 1));
+           glm::scale(glm::vec3(bone->length, 0.25, 0.25));
 }
 
 void GUI::mouseButtonCallback(int button, int action, int mods) {
