@@ -146,7 +146,7 @@ bool intersectLocal(glm::dvec3 p, glm::dvec3 d, int &T) {
     if (intersectCaps(p, d, T)) {
         int tt;
         if (intersectBody(p, d, tt)) {
-            if (tt < (T)) {
+            if (tt < T) {
                 T = tt;
             }
         }
