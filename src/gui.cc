@@ -247,6 +247,8 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
         current_bone_ %= mesh_->getNumberOfBones();
     } else if (key == GLFW_KEY_T && action != GLFW_RELEASE) {
         transparent_ = !transparent_;
+    } else if (key == GLFW_KEY_I && action != GLFW_RELEASE) {
+        translate_ = !translate_;
     }
 
     // FIXME: implement other controls here.
@@ -283,7 +285,7 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
     } else if (drag_bone && current_bone_ != -1) {
         // FIXME: Handle bone rotation
 
-        if (true) {
+        if (!translate_) {
             Bone *bone = mesh_->skeleton.bones[current_bone_];
             glm::vec3 start = glm::unProject(glm::vec3(mouse_start, 0.0f),
                                              view_matrix_ * model_matrix_,

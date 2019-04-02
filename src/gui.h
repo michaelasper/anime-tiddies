@@ -65,6 +65,7 @@ class GUI {
     bool fps_mode_ = false;
     bool pose_changed_ = true;
     bool transparent_ = false;
+	bool translate_ = false;
     int current_bone_ = -1;
     int current_button_ = -1;
     float roll_speed_ = M_PI / 64.0f;
