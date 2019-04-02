@@ -344,6 +344,7 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
     std::vector<Bone *> bones = mesh_->skeleton.bones;
 
     for (auto bone : bones) {
+        T = -1;
         if (bone != nullptr) {
             glm::mat4 ori = bone_transform_index(bone->index);
             glm::vec3 p = eye_;
@@ -374,36 +375,7 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
 
 glm::mat4 GUI::bone_transform() {
     int index = current_bone_;
-    if (index == 0) {
-        return glm::mat4(1.0f);
-    }
-    Bone *bone = mesh_->skeleton.bones[index];
-
-    auto alignment = glm::mat4(1.0);
-    alignment[0][0] = bone->direction[0];
-    alignment[0][1] = bone->direction[1];
-    alignment[0][2] = bone->direction[2];
-
-    glm::vec3 y;
-    if (bone->direction.x != 0) {
-        y = glm::normalize(
-            glm::cross(bone->direction, glm::vec3(0.0, 1.0, 0.0)));
-    } else {
-        y = glm::normalize(
-            glm::cross(bone->direction, glm::vec3(1.0, 0.0, 0.0)));
-    }
-
-    auto z = glm::normalize(glm::cross(bone->direction, y));
-
-    alignment[1][0] = y[0];
-    alignment[1][1] = y[1];
-    alignment[1][2] = y[2];
-    alignment[2][0] = z[0];
-    alignment[2][1] = z[1];
-    alignment[2][2] = z[2];
-
-    return bone->deformed_transform * alignment *
-           glm::scale(glm::vec3(bone->length, 1, 1));
+    return bone_transform_index(index);
 }
 
 glm::mat4 GUI::bone_transform_index(int index) {
