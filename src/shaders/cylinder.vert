@@ -10,8 +10,8 @@ in vec4 vertex_position;
 // Note: you need call sin/cos to transform the input mesh to a cylinder
 void main() {
     vec4 cylinder = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	cylinder.y = cos(2 * kPi * vertex_position.x) * 0.25;
-	cylinder.z = sin(2 * kPi * vertex_position.x) * 0.25;
+	cylinder.y = cos(2 * kPi * vertex_position.x);
+	cylinder.z = sin(2 * kPi * vertex_position.x);
 	cylinder.x = vertex_position.y;
 
     gl_Position = projection * view * model * bone_transform * cylinder;
