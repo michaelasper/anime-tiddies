@@ -100,7 +100,7 @@ struct Configuration {
 
 struct KeyFrame {
     std::vector<glm::fquat> rel_rot;
-
+    glm::vec3 root;
     static void interpolate(const KeyFrame& from, const KeyFrame& to, float tau,
                             KeyFrame& target);
 };
@@ -142,7 +142,8 @@ struct Mesh {
     std::vector<glm::vec4> face_normals;
     std::vector<glm::vec2> uv_coordinates;
     std::vector<glm::uvec3> faces;
-
+    std::vector<KeyFrame> key_frames;
+    std::vector<TextureToRender*> previews;
     std::vector<Material> materials;
     BoundingBox bounds;
     Skeleton skeleton;
@@ -155,6 +156,13 @@ struct Mesh {
     const Configuration* getCurrentQ()
         const;  // Configuration is abbreviated as Q
     void updateAnimation(float t = -1.0);
+    void updateSkeleton(KeyFrame frame);
+    void updateFromRel(Joint& parent);
+    void constructKeyFrame();
+    void delKeyFrame(int frame_id);
+    void updateKeyFrame(int frame_id);
+    void spaceKeyFrame(int frame_id);
+    void insertKeyFrame(int frame_id);
 
     void saveAnimationTo(const std::string& fn);
     void loadAnimationFrom(const std::string& fn);

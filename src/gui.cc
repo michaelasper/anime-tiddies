@@ -249,9 +249,15 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
         transparent_ = !transparent_;
     } else if (key == GLFW_KEY_I && action != GLFW_RELEASE) {
         translate_ = !translate_;
+    } else if (key == GLFW_KEY_F && action != GLFW_RELEASE) {
+        mesh_->constructKeyFrame();
+        this->setCreateFrame(true);
+    } else if (key == GLFW_KEY_DELETE && action != GLFW_RELEASE) {
+        if (current_frame_ != -1) {
+            mesh_->delKeyFrame(current_frame_);
+            this->setDelFrame(true);
+        }
     }
-
-    // FIXME: implement other controls here.
 }
 
 void GUI::mousePosCallback(double mouse_x, double mouse_y) {
@@ -320,9 +326,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
     int T = -1;
     int prev = 1000000;
 
-    // Convert the position of the mouse cursor in screen coordinates to a ray
-    // in world coordinates.
-    // Normalized Device Coordinates
+    // Convert the position of the mouse cursor in screen coordinates to a
+    // ray in world coordinates. Normalized Device Coordinates
     float x = (2.0f * mouse_x) / window_width_ - 1.0f;
     float y = 1.0f - (2.0f * mouse_y) / window_height_;
     float z = 1.0f;
@@ -370,7 +375,6 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
             }
         }
     }
-    std::cout << "current bone:" << current_bone_ << std::endl;
 }
 
 glm::mat4 GUI::bone_transform() {

@@ -43,15 +43,24 @@ class GUI {
     const float* getLightPositionPtr() const { return &light_position_[0]; }
 
     int getCurrentBone() const { return current_bone_; }
+    int getCurrentFrame() const { return current_frame_; }
     const int* getCurrentBonePointer() const { return &current_bone_; }
     bool setCurrentBone(int i);
 
     bool isTransparent() const { return transparent_; }
     bool isPlaying() const { return play_; }
+    bool isCreatingFrame() const { return createFrameBool; }
+    bool isDeletingFrame() const { return delFrameBool; }
+    bool isUpdatingFrame() const { return updateFrameBool; }
+    bool isInsertingFrame() const { return insertFrameBool; }
+    bool isLoadingFromJson() const { return loadJSONBool; }
     float getCurrentPlayTime() const;
+    float getFrameShift() const { return frame_shift_; }
 
+    void setCreateFrame(bool x) { createFrameBool = x; }
+    void setDelFrame(bool x) { delFrameBool = x; }
     glm::mat4 bone_transform();
-	glm::mat4 bone_transform_index(int index);
+    glm::mat4 bone_transform_index(int index);
 
    private:
     GLFWwindow* window_;
@@ -66,8 +75,14 @@ class GUI {
     bool pose_changed_ = true;
     bool transparent_ = false;
     bool translate_ = false;
+    bool createFrameBool = false;
+    bool delFrameBool = false;
+    bool updateFrameBool = false;
+    bool insertFrameBool = false;
+    bool loadJSONBool = false;
     int current_bone_ = -1;
     int current_button_ = -1;
+    int current_frame_ = -1;
     float roll_speed_ = M_PI / 64.0f;
     float last_x_ = 0.0f, last_y_ = 0.0f, current_x_ = 0.0f, current_y_ = 0.0f;
     float camera_distance_ = -30.0;
@@ -75,6 +90,7 @@ class GUI {
     float rotation_speed_ = 0.02f;
     float zoom_speed_ = 0.1f;
     float aspect_;
+    float frame_shift_ = 0.0f;
 
     glm::vec3 eye_ = glm::vec3(0.0f, 0.1f, camera_distance_);
     glm::vec3 up_ = glm::vec3(0.0f, 1.0f, 0.0f);

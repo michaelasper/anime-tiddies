@@ -181,6 +181,19 @@ void Skeleton::constructBone(int joint) {
     }
 }
 
+void KeyFrame::interpolate(const KeyFrame& from, const KeyFrame& to, float tau,
+                           KeyFrame& target) {
+    auto rel_rot_from = from.rel_rot;
+    auto rel_rot_to = to.rel_rot;
+
+    target.rel_rot.resize(rel_rot_from.size());
+
+    for (int i = 0; i < target.rel_rot.size(); i++)
+        target.rel_rot[i] = glm::fastMix(rel_rot_from[i], rel_rot_to[i], tau);
+
+    target.root = (1 - tau) * from.root + tau * to.root;
+}
+
 Mesh::Mesh() {}
 
 Mesh::~Mesh() {}
@@ -205,14 +218,14 @@ void Mesh::loadPmd(const std::string& fn) {
         id++;
     }
 
-    skeleton.bones.resize(skeleton.joints.size());
-    for (int i = 0; i < skeleton.joints.size(); ++i) {
+    skeleton.bones.resize(getNumberOfBones());
+    for (int i = 0; i < getNumberOfBones(); ++i) {
         if (skeleton.joints[i].parent_index == -1) {
             skeleton.bones[i] = nullptr;
         }
     }
 
-    for (uint i = 1; i < skeleton.joints.size(); i++) {
+    for (uint i = 1; i < getNumberOfBones(); i++) {
         skeleton.constructBone(i);
     }
 
@@ -241,6 +254,90 @@ void Mesh::computeBounds() {
     for (const auto& vert : vertices) {
         bounds.min = glm::min(glm::vec3(vert), bounds.min);
         bounds.max = glm::max(glm::vec3(vert), bounds.max);
+    }
+}
+
+void Mesh::updateSkeleton(KeyFrame frame) {
+    for (int i = 0; i < getNumberOfBones(); i++) {
+        skeleton.joints[i].rel_orientation = frame.rel_rot[i];
+    }
+
+    for (int i = 0; i < getNumberOfBones(); i++) {
+        if (skeleton.joints[i].parent_index == -1) {
+            // skeleton.doAnimationTranslation(frame.root_trans,
+            //                                 skeleton.joints[i].joint_index);
+            skeleton.joints[i].orientation = skeleton.joints[i].rel_orientation;
+            updateFromRel(skeleton.joints[i]);
+        }
+    }
+}
+
+void Mesh::updateFromRel(Joint& parent) {
+    for (int child_id : parent.children) {
+        Joint& child = skeleton.joints[child_id];
+        child.orientation = child.rel_orientation * parent.orientation;
+
+        Bone* bone = skeleton.bones[child_id];
+        bone->parent_orientation_relative = parent.rel_orientation;
+        bone->orientation = parent.orientation;
+
+        if (parent.parent_index == -1) {
+            bone->deformed_transform =
+                bone->translation *
+                glm::toMat4(bone->parent_orientation_relative);
+        } else {
+            bone->deformed_transform =
+                bone->parent->deformed_transform * bone->translation *
+                glm::toMat4(bone->parent_orientation_relative);
+        }
+
+        updateFromRel(child);
+    }
+}
+
+void Mesh::constructKeyFrame() {
+    KeyFrame frame;
+    for (uint i = 0; i < getNumberOfBones(); i++) {
+        frame.rel_rot.emplace_back(skeleton.joints[i].rel_orientation);
+    }
+    frame.root = skeleton.joints[0].position - skeleton.joints[0].init_position;
+    key_frames.emplace_back(frame);
+    if (key_frames.size() == 1) {
+        for (uint i = 1; i < skeleton.bones.size(); i++) {
+            skeleton.bones[i]->start_translation =
+                skeleton.bones[i]->translation;
+        }
+    }
+}
+
+void Mesh::updateKeyFrame(int frame_id) {
+    if (frame_id < 0) return;
+    KeyFrame frame;
+    for (int i = 0; i < skeleton.joints.size(); i++)
+        frame.rel_rot.emplace_back(skeleton.joints[i].rel_orientation);
+
+    frame.root = skeleton.joints[0].position - skeleton.joints[0].init_position;
+    key_frames[frame_id] = frame;
+}
+
+void Mesh::delKeyFrame(int frame_id) {
+    key_frames.erase(key_frames.begin() + frame_id);
+}
+
+void Mesh::insertKeyFrame(int frame_id) {
+    KeyFrame frame;
+    for (int i = 0; i < skeleton.joints.size(); i++)
+        frame.rel_rot.emplace_back(skeleton.joints[i].rel_orientation);
+
+    frame.root = skeleton.joints[0].position - skeleton.joints[0].init_position;
+
+    key_frames.insert(key_frames.begin() + frame_id, frame);
+
+    if (frame_id == 0) {
+        for (int i = 1; i < skeleton.bones.size(); i++) {
+            skeleton.bones[i]->start_translation =
+                skeleton.bones[i]->translation;
+        }
     }
 }
 
