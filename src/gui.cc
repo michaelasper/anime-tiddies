@@ -188,29 +188,30 @@ void GUI::assignMesh(Mesh *mesh) {
 }
 
 void GUI::keyCallback(int key, int scancode, int action, int mods) {
-#if 0
-	if (action != 2)
-		std::cerr << "Key: " << key << " action: " << action << std::endl;
-#endif
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window_, GL_TRUE);
         return;
     }
     if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
-        unsigned char *pixels;
-        int screen_info[4];
+        // unsigned char *pixels;
+        // int screen_info[4];
 
-        // get the width/height of the window
-        glGetIntegerv(GL_VIEWPORT, screen_info);
-        pixels = new unsigned char[screen_info[2] * screen_info[3] * 3];
+        // // get the width/height of the window
+        // glGetIntegerv(GL_VIEWPORT, screen_info);
+        // pixels = new unsigned char[screen_info[2] * screen_info[3] * 3];
+        // // Read in pixel data
+        // glReadPixels(0, 0, screen_info[2], screen_info[3], GL_RGB,
+        //              GL_UNSIGNED_BYTE, pixels);
 
-        // Read in pixel data
-        glReadPixels(0, 0, screen_info[2], screen_info[3], GL_RGB,
-                     GL_UNSIGNED_BYTE, pixels);
+        // SaveJPEG("out.jpg", screen_info[2], screen_info[3], pixels);
 
-        SaveJPEG("out.jpg", screen_info[2], screen_info[3], pixels);
+        // std::cout << "Saved to out.jpg!" << std::endl;
 
-        std::cout << "Saved to out.jpg!" << std::endl;
+        GLubyte *pixel = (GLubyte *)malloc(4 * window_width_ * window_height_);
+        glReadPixels(0, 0, window_width_, window_height_, GL_RGB,
+                     GL_UNSIGNED_BYTE, pixel);
+        SaveJPEG("output.jpg", window_width_, window_height_, pixel);
+        free(pixel);
     }
     if (key == GLFW_KEY_S && (mods & GLFW_MOD_CONTROL)) {
         if (action == GLFW_RELEASE) mesh_->saveAnimationTo("animation.json");
@@ -224,7 +225,6 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
             roll_speed = -roll_speed_;
         else
             roll_speed = roll_speed_;
-        // FIXME: actually roll the bone here
 
         if (current_bone_ == -1) {
             return;
@@ -252,10 +252,37 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
     } else if (key == GLFW_KEY_F && action != GLFW_RELEASE) {
         mesh_->constructKeyFrame();
         this->setCreateFrame(true);
+    } else if (key == GLFW_KEY_P && action != GLFW_RELEASE) {
+        if (!isPlaying()) {
+            setPlaying(true);
+        } else {
+            setPlaying(false);
+        }
     } else if (key == GLFW_KEY_DELETE && action != GLFW_RELEASE) {
         if (current_frame_ != -1) {
             mesh_->delKeyFrame(current_frame_);
             this->setDelFrame(true);
+        }
+    } else if (key == GLFW_KEY_Q && action != GLFW_RELEASE) {
+        prevFrame();
+    } else if (key == GLFW_KEY_E && action != GLFW_RELEASE) {
+        if (getCurrentFrame() < (int)mesh_->key_frames.size() - 1) {
+            nextFrame();
+        }
+    } else if (key == GLFW_KEY_U && action != GLFW_RELEASE) {
+        if (current_frame_ != -1) {
+            mesh_->updateKeyFrame(current_frame_);
+            setUpdateFrame(true);
+        }
+    } else if (key == GLFW_KEY_SPACE && action != GLFW_RELEASE) {
+        if (current_frame_ != -1) {
+            mesh_->spaceKeyFrame(current_frame_);
+        }
+    } else if (key == GLFW_KEY_Y && action != GLFW_RELEASE) {
+        if (cursorBool && current_frame_ >= 0) {
+            mesh_->insertKeyFrame(current_frame_);
+            insertFrameBool = true;
+            std::cout << insertFrameBool << std::endl;
         }
     }
 }
@@ -268,7 +295,36 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
     float delta_x = current_x_ - last_x_;
     float delta_y = current_y_ - last_y_;
     if (sqrt(delta_x * delta_x + delta_y * delta_y) < 1e-15) return;
+
+    bool drag_scroll =
+        if_drag_scroll && current_button_ == GLFW_MOUSE_BUTTON_LEFT;
+    if (drag_scroll) {
+        if (mesh_->previews.size() <= 3) {
+            return;
+        } else {
+            int total_height = mesh_->previews.size() * preview_height_;
+            int top =
+                (total_height - frame_shift_) / total_height * window_height_;
+            int bottom = (total_height - frame_shift_ - window_height_) /
+                         total_height * window_height_;
+            if (current_y_ > bottom && current_y_ < top) {
+                int max_shift =
+                    preview_height_ * mesh_->key_frames.size() - window_height_;
+                float delta = delta_y / window_height_ * total_height;
+                if (frame_shift_ - delta >= 0 &&
+                    (int)frame_shift_ <= max_shift) {
+                    frame_shift_ -= delta;
+                } else if (frame_shift_ - delta >= 0 && delta >= 0) {
+                    frame_shift_ -= delta;
+                } else {
+                    return;
+                }
+            }
+        }
+    }
+
     if (mouse_x > view_width_) return;
+
     glm::vec3 mouse_direction =
         glm::normalize(glm::vec3(delta_x, delta_y, 0.0f));
     glm::vec2 mouse_start = glm::vec2(last_x_, last_y_);

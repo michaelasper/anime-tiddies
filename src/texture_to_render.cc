@@ -6,46 +6,88 @@
 TextureToRender::TextureToRender() {}
 
 TextureToRender::~TextureToRender() {
-    if (framebuffer_ < 0) return;
+    if (fb_ < 0) return;
+
     unbind();
-    glDeleteFramebuffers(1, &framebuffer_);
-    glDeleteTextures(1, &texture_);
-    glDeleteRenderbuffers(1, &depth_);
+
+    glDeleteFramebuffers(1, &fb_);
+    glDeleteTextures(1, &tex_);
+    glDeleteRenderbuffers(1, &dep_);
+
+    release();
+    std::cout << "Hi" << std::endl;
 }
 
 void TextureToRender::create(int width, int height) {
-    width_ = width;
-    height_ = height;
+    w_ = width;
+    h_ = height;
+    // FIXME: Create the framebuffer object backed by a texture
 
-    // frame buffer stuff
-    glGenFramebuffers(1, &framebuffer_);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+    // create the frame buffer
+    glGenFramebuffers(1, &fb_);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb_);
 
-    // texture stuff
-    glGenTextures(1, &texture_);
-    glBindTexture(GL_TEXTURE_2D, texture_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width_, height_, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glGenTextures(1, &tex_);
 
-    // the depth buffer
-    glGenRenderbuffers(1, &depth_);
-    glBindRenderbuffer(GL_RENDERBUFFER, depth_);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width_, height_);
+    glBindTexture(GL_TEXTURE_2D, tex_);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w_, h_, 0, GL_RGB, GL_UNSIGNED_BYTE,
+                 NULL);
+
+    glGenRenderbuffers(1, &dep_);
+    glBindRenderbuffer(GL_RENDERBUFFER, dep_);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w_, h_);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                              GL_RENDERBUFFER, depth_);
+                              GL_RENDERBUFFER, dep_);
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex_, 0);
+
     GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, DrawBuffers);
 
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Failed to create framebuffer object as render target"
+                  << std::endl;
+    } else {
+        std::cerr << "Framebuffer ready" << std::endl;
+    }
     unbind();
 }
 
 void TextureToRender::bind() {
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    glViewport(0, 0, width_, height_);
+    // FIXME: Unbind the framebuffer object to GL_FRAMEBUFFER
+    glBindFramebuffer(GL_FRAMEBUFFER, fb_);
+    glViewport(0, 0, w_, h_);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+
+    // glClearDepth(1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void TextureToRender::unbind() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void TextureToRender::unbind() {
+    // FIXME: Unbind current framebuffer object from the render target
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+
+    // glClearDepth(1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void TextureToRender::release() {
+    if (fb_ < 0) return;
+
+    unbind();
+
+    glDeleteFramebuffers(1, &fb_);
+    glDeleteTextures(1, &tex_);
+    glDeleteRenderbuffers(1, &dep_);
+
+    fb_ = 0;
+    tex_ = 0;
+    dep_ = 0;
+}

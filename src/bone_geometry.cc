@@ -324,6 +324,11 @@ void Mesh::delKeyFrame(int frame_id) {
     key_frames.erase(key_frames.begin() + frame_id);
 }
 
+void Mesh::spaceKeyFrame(int frame_id) {
+    updateSkeleton(key_frames[frame_id]);
+    skeleton.refreshCache(&currentQ_);
+}
+
 void Mesh::insertKeyFrame(int frame_id) {
     KeyFrame frame;
     for (int i = 0; i < skeleton.joints.size(); i++)
@@ -344,6 +349,16 @@ void Mesh::insertKeyFrame(int frame_id) {
 void Mesh::updateAnimation(float t) {
     skeleton.refreshCache(&currentQ_);
     // FIXME: Support Animation Here
+
+    int frame_id = floor(t);
+    if (t != -1.0 && frame_id + 1 < (int)key_frames.size()) {
+        float tao = t - frame_id;
+        KeyFrame frame;
+        KeyFrame::interpolate(key_frames[frame_id], key_frames[frame_id + 1],
+                              tao, frame);
+
+        updateSkeleton(frame);
+    }
 }
 
 const Configuration* Mesh::getCurrentQ() const { return &currentQ_; }

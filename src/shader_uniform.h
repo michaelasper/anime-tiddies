@@ -3,14 +3,14 @@
 
 #include <GL/glew.h>
 #include <debuggl.h>
-#include <string>
-#include <vector>
-#include <glm/glm.hpp>
 #include <functional>
-#include <type_traits>
-#include <memory>
-#include <iostream>
+#include <glm/glm.hpp>
 #include <glm/gtx/io.hpp>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 void bindUniform(unsigned, int);
 void bindUniform(unsigned, float);
@@ -29,18 +29,18 @@ void bindUniform(unsigned, const std::vector<glm::mat4>&);
 // FIXME: overload bindUniform function to handle new data types.
 
 struct ShaderUniformBase {
-	std::string name;
+    std::string name;
 
-	virtual void bind(unsigned loc) = 0;
+    virtual void bind(unsigned loc) = 0;
 };
 
 typedef std::shared_ptr<ShaderUniformBase> ShaderUniformPtr;
 
-template<typename T>
+template <typename T>
 std::ostream& operator<<(std::ostream& stm, const std::vector<T>& obj) {
     stm << "[";
     if (!obj.empty()) {
-        for (size_t i = 0 ; i<obj.size()-1 ; ++i) {
+        for (size_t i = 0; i < obj.size() - 1; ++i) {
             stm << obj[i] << ",";
         }
         stm << obj.back();
@@ -49,44 +49,39 @@ std::ostream& operator<<(std::ostream& stm, const std::vector<T>& obj) {
     return stm;
 }
 
-template<typename T>
+template <typename T>
 struct ShaderUniform : public ShaderUniformBase {
-	std::function<T()> data_source;
+    std::function<T()> data_source;
 
-	ShaderUniform(const std::string& name,
-	              std::function<T()> func)
-	{
-		this->name = name;
-		this->data_source = func;
-	}
+    ShaderUniform(const std::string& name, std::function<T()> func) {
+        this->name = name;
+        this->data_source = func;
+    }
 
-	virtual void bind(unsigned loc) override
-	{
-		CHECK_GL_ERROR(bindUniform(loc, this->data_source()));
-	};
+    virtual void bind(unsigned loc) override {
+        auto data = this->data_source();
+        // std::cerr << "binding " << name << " to " << data << std::endl;
+        CHECK_GL_ERROR(bindUniform(loc, data));
+    };
 };
 
-template<typename T>
-std::shared_ptr<ShaderUniformBase>
-make_uniform(const std::string& name,
-             std::function<T()> func)
-{
-	// using RC = typename std::remove_const<T>::type;
-	// using Bare = typename std::remove_reference<RC>::type;
-	return std::make_shared<ShaderUniform<T>>(name, func);
+template <typename T>
+std::shared_ptr<ShaderUniformBase> make_uniform(const std::string& name,
+                                                std::function<T()> func) {
+    // using RC = typename std::remove_const<T>::type;
+    // using Bare = typename std::remove_reference<RC>::type;
+    return std::make_shared<ShaderUniform<T>>(name, func);
 }
 
 struct TextureCombo : public ShaderUniformBase {
-	std::function<unsigned()> sampler_source;
-	unsigned texture_unit;
-	std::function<unsigned()> texture_source;
-	virtual void bind(unsigned loc) override;
+    std::function<unsigned()> sampler_source;
+    unsigned texture_unit;
+    std::function<unsigned()> texture_source;
+    virtual void bind(unsigned loc) override;
 };
 
-std::shared_ptr<TextureCombo>
-make_texture(const std::string& name,
-             std::function<unsigned()> sampler_source,
-             unsigned texture_unit,
-             std::function<unsigned()> texture_source);
+std::shared_ptr<TextureCombo> make_texture(
+    const std::string& name, std::function<unsigned()> sampler_source,
+    unsigned texture_unit, std::function<unsigned()> texture_source);
 
 #endif

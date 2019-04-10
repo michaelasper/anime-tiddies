@@ -158,6 +158,7 @@ struct Mesh {
     void updateAnimation(float t = -1.0);
     void updateSkeleton(KeyFrame frame);
     void updateFromRel(Joint& parent);
+
     void constructKeyFrame();
     void delKeyFrame(int frame_id);
     void updateKeyFrame(int frame_id);
