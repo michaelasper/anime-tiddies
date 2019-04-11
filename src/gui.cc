@@ -166,7 +166,7 @@ GUI::GUI(GLFWwindow *window, int view_width, int view_height,
     glfwSetCursorPosCallback(window_, MousePosCallback);
     glfwSetMouseButtonCallback(window_, MouseButtonCallback);
     glfwSetScrollCallback(window_, MouseScrollCallback);
-
+    glfwSetTime(0.0);
     glfwGetWindowSize(window_, &window_width_, &window_height_);
     if (view_width < 0 || view_height < 0) {
         view_width_ = window_width_;
@@ -254,10 +254,14 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
         this->setCreateFrame(true);
     } else if (key == GLFW_KEY_P && action != GLFW_RELEASE) {
         if (!isPlaying()) {
+            glfwSetTime(0.0);
             setPlaying(true);
         } else {
             setPlaying(false);
         }
+    } else if (key == GLFW_KEY_R && action != GLFW_RELEASE) {
+        glfwSetTime(0.0);
+        play_ = true;
     } else if (key == GLFW_KEY_DELETE && action != GLFW_RELEASE) {
         if (current_frame_ != -1) {
             mesh_->delKeyFrame(current_frame_);
@@ -515,7 +519,11 @@ bool GUI::setCurrentBone(int i) {
     return true;
 }
 
-float GUI::getCurrentPlayTime() const { return 0.0f; }
+float GUI::getCurrentPlayTime() {
+    double new_time = glfwGetTime();
+    time_ = new_time;
+    return time_;
+}
 
 bool GUI::captureWASDUPDOWN(int key, int action) {
     if (key == GLFW_KEY_W) {

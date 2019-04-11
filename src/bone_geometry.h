@@ -103,6 +103,9 @@ struct KeyFrame {
     glm::vec3 root;
     static void interpolate(const KeyFrame& from, const KeyFrame& to, float tau,
                             KeyFrame& target);
+
+    // void KeyFrame::interpolateSpline(const std::vector<KeyFrame>& key_frames,
+    //                                  float t, KeyFrame& target);
 };
 
 struct LineMesh {

@@ -54,7 +54,7 @@ class GUI {
     bool isUpdatingFrame() const { return updateFrameBool; }
     bool isInsertingFrame() const { return insertFrameBool; }
     bool isLoadingFromJson() const { return loadJSONBool; }
-    float getCurrentPlayTime() const;
+    float getCurrentPlayTime();
     float getFrameShift() const { return frame_shift_; }
 
     void setCreateFrame(bool x) { createFrameBool = x; }
@@ -127,6 +127,7 @@ class GUI {
     bool captureWASDUPDOWN(int key, int action);
 
     bool play_ = false;
+    double time_ = 0.0;
 };
 
 #endif

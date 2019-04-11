@@ -329,6 +329,32 @@ void Mesh::spaceKeyFrame(int frame_id) {
     skeleton.refreshCache(&currentQ_);
 }
 
+glm::fquat splineQuat(glm::fquat q0, glm::fquat q1, glm::fquat q2,
+                      glm::fquat q3, float tau) {
+    glm::fquat s1 = q1 * glm::exp((glm::log(glm::inverse(q1) * q2) +
+                                   glm::log(glm::inverse(q1) * q0)) /
+                                  (-4.0f));
+    glm::fquat s2 = q2 * glm::exp((glm::log(glm::inverse(q2) * q3) +
+                                   glm::log(glm::inverse(q2) * q1)) /
+                                  (-4.0f));
+    glm::fquat temp_1 = glm::mix(q1, q2, tau);
+    glm::fquat temp_2 = glm::mix(s1, s2, tau);
+    glm::fquat result = glm::mix(temp_1, temp_2, 2.0f * tau * (1.0f - tau));
+    return result;
+}
+
+// void KeyFrame::interpolateSpline(const std::vector<KeyFrame>& key_frames,
+//                                  float t, KeyFrame& target) {
+//     for (uint i = 0; i < key_frames[0].rel_rot.size(); i++) {
+//         std::vector<glm::fquat> bone_rels;
+//         for (uint f_id = 0; f_id < key_frames.size(); f_id++) {
+//             bone_rels.emplace_back(key_frames[f_id].rel_rot[i]);
+//         }
+//         glm::fquat spline_quat = calculateSplineQuat(bone_rels, t);
+//         target.rel_rot.emplace_back(spline_quat);
+//     }
+// }
+
 void Mesh::insertKeyFrame(int frame_id) {
     KeyFrame frame;
     for (int i = 0; i < skeleton.joints.size(); i++)
