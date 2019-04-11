@@ -511,6 +511,9 @@ int main(int argc, char* argv[]) {
                        (main_view_height - (i + 1) * preview_height) * 2 +
                            gui.getFrameShift(),
                        preview_width * 2, preview_height * 2);
+
+            if_show_border = i == gui.getCurrentFrame() ? 1 : 0;
+
             sampler = mesh.previews[i]->getTexture();
 
             preview_pass.setup();

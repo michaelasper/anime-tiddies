@@ -475,6 +475,14 @@ void GUI::mouseButtonCallback(int button, int action, int mods) {
         return;
     }
     // FIXME: Key Frame Selection
+    if (current_x_ > view_width_ && (current_x_ < view_width_ + preview_height_ *4/3) && action == GLFW_PRESS) {
+		int next_frame = floor((view_height_ + frame_shift_ - current_y_)/ preview_height_);
+		if (next_frame < 0 || next_frame >= (int)mesh_->key_frames.size()){
+			return;
+		} else {
+			current_frame_ = next_frame;
+		}
+	}
 }
 
 void GUI::mouseScrollCallback(double dx, double dy) {
