@@ -84,7 +84,7 @@ struct Bone {
 
     void translate(glm::vec3 translation);
     void translateParent();
-
+    void performAnimateTranslate(glm::vec3 diff_translation);
     void rotate(glm::fquat rotate_);
     void rotate_(glm::fquat rotate_);
     void rotateParent();
@@ -103,9 +103,10 @@ struct KeyFrame {
     glm::vec3 root;
     static void interpolate(const KeyFrame& from, const KeyFrame& to, float tau,
                             KeyFrame& target);
-
-    // void KeyFrame::interpolateSpline(const std::vector<KeyFrame>& key_frames,
-    //                                  float t, KeyFrame& target);
+    static void interpolateSpline(const std::vector<KeyFrame>& key_frames,
+                                  float t, KeyFrame& target,
+                                  const KeyFrame& from, const KeyFrame& to,
+                                  float tau);
 };
 
 struct LineMesh {
@@ -123,7 +124,7 @@ struct Skeleton {
     const glm::fquat* collectJointRot() const;
     void constructBone(int joint);
     void translate(glm::vec3 translation, int root);
-
+    void animateTranslate(glm::vec3 diff_translation, int root_id);
     // FIXME: create skeleton and bone data structures
     std::vector<Bone*> bones;
 };
@@ -170,11 +171,14 @@ struct Mesh {
 
     void saveAnimationTo(const std::string& fn);
     void loadAnimationFrom(const std::string& fn);
+    void setSpline(bool x) { spline_ = x; }
+    bool getSpline() { return spline_; }
 
    private:
     void computeBounds();
     void computeNormals();
     Configuration currentQ_;
+    bool spline_ = false;
 };
 
 #endif

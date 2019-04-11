@@ -281,6 +281,16 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
             insertFrameBool = true;
             std::cout << insertFrameBool << std::endl;
         }
+    } else if (key == GLFW_KEY_M && action != GLFW_RELEASE) {
+        mesh_->setSpline(!mesh_->getSpline());
+    } else if (key == GLFW_KEY_N && action != GLFW_RELEASE) {
+        if (!isPlaying()) {
+            play_ = true;
+            glfwSetTime(0.0);
+            this->setExporting(true);
+        } else {
+            play_ = false;
+        }
     }
 }
 

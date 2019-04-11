@@ -54,6 +54,7 @@ class GUI {
     bool isUpdatingFrame() const { return updateFrameBool; }
     bool isInsertingFrame() const { return insertFrameBool; }
     bool isLoadingFromJson() const { return loadJSONBool; }
+    bool isExporting() const { return exportBool; }
     float getCurrentPlayTime();
     float getFrameShift() const { return frame_shift_; }
 
@@ -63,6 +64,7 @@ class GUI {
     void setUpdateFrame(bool x) { updateFrameBool = x; }
     void setDelFrame(bool x) { delFrameBool = x; }
     void setPlaying(bool x) { play_ = x; }
+    void setExporting(bool x) { exportBool = x; }
     void prevFrame() {
         if (current_frame_ > 0) {
             current_frame_--;
@@ -77,14 +79,15 @@ class GUI {
 
     glm::mat4 bone_transform();
     glm::mat4 bone_transform_index(int index);
-
-   private:
-    GLFWwindow* window_;
-    Mesh* mesh_;
     const char* cmd =
         "ffmpeg -r 60 -f rawvideo -pix_fmt rgba -s 960x720 -i - "
         "-threads 0 -preset fast -y -pix_fmt yuv420p -crf 21 -vf vflip "
         "output.mp4";
+
+   private:
+    GLFWwindow* window_;
+    Mesh* mesh_;
+
     int window_width_, window_height_;
     int view_width_, view_height_;
     int preview_height_;
@@ -98,6 +101,7 @@ class GUI {
     bool delFrameBool = false;
     bool updateFrameBool = false;
     bool if_drag_scroll = false;
+    bool exportBool = false;
     bool insertFrameBool = false;
     bool cursorBool = true;
     bool loadJSONBool = false;

@@ -30,6 +30,9 @@ int preview_bar_width = preview_width;
 int preview_bar_height = main_view_height;
 const std::string window_title = "Animation";
 
+FILE* file_open;
+int* v_buffer = new int[main_view_width * main_view_height];
+
 const char* vertex_shader =
 #include "shaders/default.vert"
     ;
@@ -330,6 +333,7 @@ int main(int argc, char* argv[]) {
     bool draw_skeleton = true;
     bool draw_object = true;
     bool draw_cylinder = true;
+    bool file_exists = false;
 
     if (argc >= 3) {
         mesh.loadAnimationFrom(argv[2]);
@@ -530,6 +534,26 @@ int main(int argc, char* argv[]) {
         // Poll and swap.
         glfwPollEvents();
         glfwSwapBuffers(window);
+
+        if (gui.isExporting()) {
+            if (!file_exists) {
+                file_open = popen(gui.cmd, "w");
+                file_exists = true;
+            }
+
+            glReadPixels(0, 0, main_view_width * 2, main_view_height * 2,
+                         GL_RGBA, GL_UNSIGNED_BYTE, v_buffer);
+
+            fwrite(v_buffer,
+                   main_view_height * main_view_width * 4 * sizeof(int), 1,
+                   file_open);
+
+            if (gui.getCurrentPlayTime() > mesh.key_frames.size() - 1.0) {
+                pclose(file_open);
+                gui.setExporting(false);
+                file_exists = false;
+            }
+        }
     }
     glfwDestroyWindow(window);
     glfwTerminate();
