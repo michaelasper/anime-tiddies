@@ -59,6 +59,7 @@ class GUI {
 
     void setCreateFrame(bool x) { createFrameBool = x; }
     void setInsertFrame(bool x) { insertFrameBool = x; }
+    void setLoadJSON(bool x) { loadJSONBool = x; }
     void setUpdateFrame(bool x) { updateFrameBool = x; }
     void setDelFrame(bool x) { delFrameBool = x; }
     void setPlaying(bool x) { play_ = x; }

@@ -193,31 +193,24 @@ void GUI::keyCallback(int key, int scancode, int action, int mods) {
         return;
     }
     if (key == GLFW_KEY_J && action == GLFW_RELEASE) {
-        // unsigned char *pixels;
-        // int screen_info[4];
+        unsigned char *pixels;
+        int screen_info[4];
 
-        // // get the width/height of the window
-        // glGetIntegerv(GL_VIEWPORT, screen_info);
-        // pixels = new unsigned char[screen_info[2] * screen_info[3] * 3];
-        // // Read in pixel data
-        // glReadPixels(0, 0, screen_info[2], screen_info[3], GL_RGB,
-        //              GL_UNSIGNED_BYTE, pixels);
+        // get the width/height of the window
+        glGetIntegerv(GL_VIEWPORT, screen_info);
+        pixels = new unsigned char[screen_info[2] * screen_info[3] * 3];
+        // Read in pixel data
+        glReadPixels(0, 0, screen_info[2], screen_info[3], GL_RGB,
+                     GL_UNSIGNED_BYTE, pixels);
 
-        // SaveJPEG("out.jpg", screen_info[2], screen_info[3], pixels);
+        SaveJPEG("out.jpg", screen_info[2], screen_info[3], pixels);
 
-        // std::cout << "Saved to out.jpg!" << std::endl;
-
-        GLubyte *pixel = (GLubyte *)malloc(4 * window_width_ * window_height_);
-        glReadPixels(0, 0, window_width_, window_height_, GL_RGB,
-                     GL_UNSIGNED_BYTE, pixel);
-        SaveJPEG("output.jpg", window_width_, window_height_, pixel);
-        free(pixel);
+        std::cout << "Saved to out.jpg!" << std::endl;
     }
     if (key == GLFW_KEY_S && (mods & GLFW_MOD_CONTROL)) {
         if (action == GLFW_RELEASE) mesh_->saveAnimationTo("animation.json");
         return;
     }
-
     if (mods == 0 && captureWASDUPDOWN(key, action)) return;
     if (key == GLFW_KEY_LEFT || key == GLFW_KEY_RIGHT) {
         float roll_speed;
@@ -485,8 +478,19 @@ void GUI::mouseButtonCallback(int button, int action, int mods) {
 }
 
 void GUI::mouseScrollCallback(double dx, double dy) {
-    if (current_x_ < view_width_) return;
+    if (current_x_ < view_width_ ||
+        current_x_ > view_width_ + preview_height_ * 4 / 3)
+        return;
     // FIXME: Mouse Scrolling
+    int max_shift = preview_height_ * mesh_->key_frames.size() - window_height_;
+    if (frame_shift_ - 40.0f * (float)dy >= 0 &&
+        (int)frame_shift_ <= max_shift) {
+        frame_shift_ -= 40.0f * (float)dy;
+    } else if (frame_shift_ - 40.0f * (float)dy >= 0 && dy >= 0) {
+        frame_shift_ -= 40.0f * (float)dy;
+    } else {
+        return;
+    }
 }
 
 void GUI::updateMatrices() {

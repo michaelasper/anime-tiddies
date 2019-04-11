@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
               << " vertices and " << mesh.faces.size() << " faces.\n";
 
     glm::vec4 mesh_center = glm::vec4(0.0f);
-    for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+    for (int i = 0; i < mesh.vertices.size(); ++i) {
         mesh_center += mesh.vertices[i];
     }
     mesh_center /= mesh.vertices.size();
@@ -178,7 +178,6 @@ int main(int argc, char* argv[]) {
         return ortho_matrix;
     };
 
-    std::function<int()> sampler_data = [&sampler]() { return sampler; };
     std::function<int()> show_border_data = [&if_show_border]() {
         return if_show_border;
     };
@@ -211,7 +210,6 @@ int main(int argc, char* argv[]) {
         make_uniform("bar_frame_shift", bar_frame_shift_data);
     auto show_border = make_uniform("show_border", show_border_data);
     auto orthomat = make_uniform("orthomat", orthomat_data);
-    auto sampler_2D = make_uniform("sampler", sampler_data);
     auto number_preview = make_uniform("number_preview", num_preview_data);
 
     std::function<float()> alpha_data = [&gui]() {
@@ -334,6 +332,7 @@ int main(int argc, char* argv[]) {
 
     if (argc >= 3) {
         mesh.loadAnimationFrom(argv[2]);
+        gui.setLoadJSON(true);
     }
 
     while (!glfwWindowShouldClose(window)) {
@@ -420,6 +419,37 @@ int main(int argc, char* argv[]) {
             gui.setUpdateFrame(false);
         }
 
+        if (gui.isLoadingFromJson()) {
+            for (int i = 0; i < mesh.key_frames.size(); i++) {
+                mesh.updateSkeleton(mesh.key_frames[i]);
+                mesh.updateAnimation();
+                TextureToRender* texture = new TextureToRender();
+                texture->create(preview_width, preview_height);
+                texture->bind();
+
+                if (draw_floor) {
+                    floor_pass.setup();
+                    // Draw our triangles.
+                    CHECK_GL_ERROR(glDrawElements(GL_TRIANGLES,
+                                                  floor_faces.size() * 3,
+                                                  GL_UNSIGNED_INT, 0));
+                }
+
+                // Draw the model
+                if (draw_object) {
+                    object_pass.setup();
+                    int mid = 0;
+                    while (object_pass.renderWithMaterial(mid)) mid++;
+                }
+
+                mesh.previews.emplace_back(texture);
+                texture->unbind();
+            }
+            mesh.updateSkeleton(mesh.key_frames[0]);
+            mesh.updateAnimation();
+            gui.setLoadJSON(false);
+        }
+
         if (gui.isInsertingFrame()) {
             TextureToRender* texture = new TextureToRender();
             texture->create(preview_width, preview_height);
@@ -478,9 +508,8 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < (int)mesh.previews.size(); i++) {
             glViewport(main_view_width * 2,
-                       (main_view_height - (i + 1) * preview_height +
-                        gui.getFrameShift()) *
-                           2,
+                       (main_view_height - (i + 1) * preview_height) * 2 +
+                           gui.getFrameShift(),
                        preview_width * 2, preview_height * 2);
             sampler = mesh.previews[i]->getTexture();
 
