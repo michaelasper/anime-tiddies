@@ -475,30 +475,30 @@ void GUI::mouseButtonCallback(int button, int action, int mods) {
         return;
     }
     // FIXME: Key Frame Selection
-    if (current_x_ > view_width_ && (current_x_ < view_width_ + preview_height_ *4/3) && action == GLFW_PRESS) {
-		int next_frame = floor((view_height_ + frame_shift_ - current_y_)/ preview_height_);
-		if (next_frame < 0 || next_frame >= (int)mesh_->key_frames.size()){
-			return;
-		} else {
-			current_frame_ = next_frame;
-		}
-	}
+    if (current_x_ > view_width_ &&
+        (current_x_ < view_width_ + preview_height_ * 4 / 3) &&
+        action == GLFW_PRESS) {
+        int next_frame =
+            floor((view_height_ + frame_shift_ - current_y_) / preview_height_);
+        if (next_frame < 0 || next_frame >= (int)mesh_->key_frames.size()) {
+            return;
+        } else {
+            current_frame_ = next_frame;
+        }
+    }
 }
 
 void GUI::mouseScrollCallback(double dx, double dy) {
-    if (current_x_ < view_width_ ||
-        current_x_ > view_width_ + preview_height_ * 4 / 3)
-        return;
+    if (current_x_ < view_width_) return;
     // FIXME: Mouse Scrolling
-    int max_shift = preview_height_ * mesh_->key_frames.size() - window_height_;
-    if (frame_shift_ - 40.0f * (float)dy >= 0 &&
-        (int)frame_shift_ <= max_shift) {
-        frame_shift_ -= 40.0f * (float)dy;
-    } else if (frame_shift_ - 40.0f * (float)dy >= 0 && dy >= 0) {
-        frame_shift_ -= 40.0f * (float)dy;
-    } else {
-        return;
-    }
+    int min_shift = 0;
+    int max_shift =
+        mesh_->key_frames.size() * preview_height_ - 3 * preview_height_;
+    max_shift = 0 > max_shift ? 0 : max_shift;
+
+    frame_shift_ += -20 * (int)dy;
+    frame_shift_ = min_shift > frame_shift_ ? min_shift : frame_shift_;
+    frame_shift_ = max_shift < frame_shift_ ? max_shift : frame_shift_;
 }
 
 void GUI::updateMatrices() {

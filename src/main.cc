@@ -183,7 +183,8 @@ int main(int argc, char* argv[]) {
     };
 
     std::function<float()> frame_shift_data = [&gui]() {
-        return gui.getFrameShift();
+        static const float f = gui.getFrameShift();
+        return f;
     };
 
     int num_preview = mesh.key_frames.size();
