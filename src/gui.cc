@@ -384,8 +384,8 @@ void GUI::mousePosCallback(double mouse_x, double mouse_y) {
 
     // Convert the position of the mouse cursor in screen coordinates to a
     // ray in world coordinates. Normalized Device Coordinates
-    float x = (2.0f * mouse_x) / window_width_ - 1.0f;
-    float y = 1.0f - (2.0f * mouse_y) / window_height_;
+    float x = (2.0f * mouse_x) / view_width_ - 1.0f;
+    float y = 1.0f - (2.0f * mouse_y) / view_height_;
     float z = 1.0f;
 
     // 4d homogeneous coordinates

@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
     }
     mesh_center /= mesh.vertices.size();
 
-    int if_show_border = 1;
+    int if_show_border = 0;
     int if_show_cursor = 1;
     int sampler = -1;
     std::vector<glm::vec4> quad_vertices;
@@ -288,7 +288,7 @@ int main(int argc, char* argv[]) {
     RenderPass preview_pass(
         -1, preview_pass_input,
         {preview_vertex_shader, nullptr, preview_fragment_shader},
-        {orthomat, frame_shift, sampler_2D, show_border}, {"fragment_color"});
+        {orthomat, frame_shift, show_border}, {"fragment_color"});
     // Setup the render pass for drawing bones
     // FIXME: You won't see the bones until Skeleton::joints were properly
     //        initialized
@@ -485,6 +485,7 @@ int main(int argc, char* argv[]) {
             sampler = mesh.previews[i]->getTexture();
 
             preview_pass.setup();
+            glBindTexture(GL_TEXTURE_2D, sampler);
             CHECK_GL_ERROR(glDrawElements(GL_TRIANGLES, quad_faces.size() * 3,
                                           GL_UNSIGNED_INT, 0));
         }
